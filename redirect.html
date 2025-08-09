@@ -4,50 +4,44 @@
 <head>
     <meta charset="UTF-8" />
     <title>OAuth Redirect</title>
-    <script>
-        // Parse access token or code from URL fragment or query string
-        function parseParams() {
-            const hash = window.location.hash.substring(1);
-            const query = window.location.search.substring(1);
-            const paramsString = hash || query;
-            const params = {};
-            paramsString.split('&').forEach(pair => {
-                const [key, value] = pair.split('=');
-                if (key) params[key] = decodeURIComponent(value);
-            });
-            return params;
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            text-align: center;
+            background: #f0f0f0;
         }
 
-        window.onload = () => {
-            const params = parseParams();
-
-            // Send the token or code to the opener window (your extension)
-            if (window.opener && params.access_token) {
-                window.opener.postMessage({
-                    type: 'oauth-token',
-                    token: params.access_token,
-                    expires_in: params.expires_in,
-                    scope: params.scope,
-                    token_type: params.token_type
-                }, '*');
-                window.close();
-            }
-            else if (window.opener && params.code) {
-                // If using authorization code flow, send the code
-                window.opener.postMessage({
-                    type: 'oauth-code',
-                    code: params.code
-                }, '*');
-                window.close();
-            } else {
-                document.body.innerText = 'OAuth redirect received no token or code.';
-            }
-        };
-    </script>
+        .message {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 
 <body>
-    <p>Processing OAuth response...</p>
+    <h1>Completing Sign-in...</h1>
+    <p class="message">You can close this window shortly.</p>
+
+    <script>
+        // Extract access_token from URL fragment
+        const params = new URLSearchParams(window.location.hash.substring(1));
+        const token = params.get("access_token");
+
+        if (token && window.opener) {
+            // Send token back to the opener (your extension background script)
+            window.opener.postMessage({ type: "oauth-token", token }, window.location.origin);
+
+            // Optionally close this window after a short delay
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        } else {
+            document.querySelector(".message").textContent = "No token found in URL.";
+        }
+    </script>
+
+    <!-- <p>Client secret: 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</p> -->
 </body>
 
 </html>
