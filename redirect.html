@@ -28,16 +28,14 @@
         const params = new URLSearchParams(window.location.hash.substring(1));
         const token = params.get("access_token");
 
-        console.log("Access Token:", token);
-
         if (token && window.opener) {
             // Send token back to the opener (your extension background script)
-            window.opener.postMessage({ type: "oauth-token", token }, window.location.origin);
+            window.opener.postMessage({ type: "oauth-token", token }, "*");
 
             // Optionally close this window after a short delay
             setTimeout(() => {
                 window.close();
-            }, 1000);
+            }, 2000);
         } else {
             document.querySelector(".message").textContent = "No token found in URL.";
         }
