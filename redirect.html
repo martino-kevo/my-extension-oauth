@@ -28,6 +28,8 @@
         const params = new URLSearchParams(window.location.hash.substring(1));
         const token = params.get("access_token");
 
+        console.log("Access Token:", token);
+
         if (token && window.opener) {
             // Send token back to the opener (your extension background script)
             window.opener.postMessage({ type: "oauth-token", token }, window.location.origin);
