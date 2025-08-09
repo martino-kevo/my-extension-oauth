@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>OAuth Redirect</title>
+    <script>
+        // Parse access token or code from URL fragment or query string
+        function parseParams() {
+            const hash = window.location.hash.substring(1);
+            const query = window.location.search.substring(1);
+            const paramsString = hash || query;
+            const params = {};
+            paramsString.split('&').forEach(pair => {
+                const [key, value] = pair.split('=');
+                if (key) params[key] = decodeURIComponent(value);
+            });
+            return params;
+        }
+
+        window.onload = () => {
+            const params = parseParams();
+
+            // Send the token or code to the opener window (your extension)
+            if (window.opener && params.access_token) {
+                window.opener.postMessage({
+                    type: 'oauth-token',
+                    token: params.access_token,
+                    expires_in: params.expires_in,
+                    scope: params.scope,
+                    token_type: params.token_type
+                }, '*');
+                window.close();
+            }
+            else if (window.opener && params.code) {
+                // If using authorization code flow, send the code
+                window.opener.postMessage({
+                    type: 'oauth-code',
+                    code: params.code
+                }, '*');
+                window.close();
+            } else {
+                document.body.innerText = 'OAuth redirect received no token or code.';
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <p>Processing OAuth response...</p>
+</body>
+
+</html>
